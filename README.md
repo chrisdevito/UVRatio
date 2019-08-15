@@ -13,7 +13,7 @@ Copies UV's scale based on it's ratio from worldarea to uv area. Currently only 
         reload(UVRatio)
         reload(UVRatio.ui)
         reload(UVRatio.ui.ui)
-        reload(UVRatio.api)
+        reload(UVRatio.ui.models)
     except:
         pass
 

@@ -3,7 +3,7 @@
 import os
 from functools import partial
 
-from UVRatio import api
+from UVRatio.ui import models
 from UVRatio.packages.Qt import QtWidgets, QtCore
 
 this_package = os.path.abspath(os.path.dirname(__file__))
@@ -42,7 +42,6 @@ class UI(QtWidgets.QDialog):
         self.create_tooltips()
 
         self.setLayout(self.layout)
-
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
     def create_layout(self):
@@ -54,25 +53,21 @@ class UI(QtWidgets.QDialog):
         :return: None
         :rtype: NoneType
         """
-        self.source_lbl = QtWidgets.QLabel("Source ")
+        self.source_ratio = 1.0
+        self.dest_ratio = 1.0
+
+        self.source_lbl = QtWidgets.QLabel(
+            "Source ({0:.3f})".format(self.source_ratio))
         self.source_lnedt = QtWidgets.QLineEdit("")
         self.source_btn = QtWidgets.QPushButton("<<")
 
-        self.dest_lbl = QtWidgets.QLabel("Destination ")
+        self.dest_lbl = QtWidgets.QLabel(
+            "Destination ({0:.3f})".format(self.dest_ratio))
         self.dest_lnedt = QtWidgets.QLineEdit("")
         self.dest_btn = QtWidgets.QPushButton("<<")
 
-        self.source_ratio = QtWidgets.QLabel("Source Ratio : 1.0")
-        self.dest_ratio = QtWidgets.QLabel("Destination Ratio : 1.0")
-
         self.doit_btn = QtWidgets.QPushButton("Copy UV Ratio")
         self.doit_btn.setMinimumHeight(40)
-
-        self.ratio_layout = QtWidgets.QGridLayout()
-        self.ratio_layout.addWidget(
-            self.source_ratio, 0, 0, QtCore.Qt.AlignCenter)
-        self.ratio_layout.addWidget(
-            self.dest_ratio, 0, 1, QtCore.Qt.AlignCenter)
 
         self.grid_layout = QtWidgets.QGridLayout()
         self.grid_layout.addWidget(self.source_lbl, 0, 0, QtCore.Qt.AlignRight)
@@ -82,7 +77,6 @@ class UI(QtWidgets.QDialog):
         self.grid_layout.addWidget(self.dest_lnedt, 1, 1)
         self.grid_layout.addWidget(self.dest_btn, 1, 2)
 
-        self.layout.addLayout(self.ratio_layout)
         self.layout.addLayout(self.grid_layout)
         self.layout.addWidget(self.doit_btn)
 
@@ -95,7 +89,11 @@ class UI(QtWidgets.QDialog):
         :return: None
         :rtype: NoneType
         """
-        pass
+        self.source_btn.clicked.connect(
+            self.add_source)
+
+        self.dest_btn.clicked.connect(
+            self.add_destination)
 
     def create_tooltips(self):
         """
@@ -107,6 +105,26 @@ class UI(QtWidgets.QDialog):
         :rtype: NoneType
         """
         pass
+
+    def add_source(self):
+
+        # get mesh
+        self.source_node = models.Mesh()
+        self.source_ratio = self.source_node.ratio
+
+        self.source_lnedt.setText("{0} {1}".format(
+            self.source_node.transform, self.source_node.indices))
+        self.source_label.setText("Source ({0:.3f})".format(self.source_ratio))
+
+    def add_destination(self):
+
+        # get mesh
+        self.dest_node = models.Mesh()
+        self.dest_ratio = self.dest_node.ratio
+
+        self.dest_lnedt.setText("{0} {1}".format(
+            self.dest_node.transform, self.dest_node.indices))
+        self.dest_label.setText("Source ({0:.3f})".format(self.dest_ratio))
 
     def keyPressEvent(self, event):
         '''
