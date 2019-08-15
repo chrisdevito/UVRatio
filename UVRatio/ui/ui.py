@@ -114,7 +114,7 @@ class UI(QtWidgets.QDialog):
 
         self.source_lnedt.setText("{0} {1}".format(
             self.source_node.transform, self.source_node.indices))
-        self.source_label.setText("Source ({0:.3f})".format(self.source_ratio))
+        self.source_lbl.setText("Source ({0:.3f})".format(self.source_ratio))
 
     def add_destination(self):
 
@@ -124,7 +124,7 @@ class UI(QtWidgets.QDialog):
 
         self.dest_lnedt.setText("{0} {1}".format(
             self.dest_node.transform, self.dest_node.indices))
-        self.dest_label.setText("Source ({0:.3f})".format(self.dest_ratio))
+        self.dest_lbl.setText("Destination ({0:.3f})".format(self.dest_ratio))
 
     def keyPressEvent(self, event):
         '''

@@ -28,23 +28,25 @@ class Mesh(object):
 
             elif component.hasFn(OpenMaya.MFn.kMeshVertComponent):
                 raise RuntimeError(
-                    "Vertices/UVs not supported! "
+                    "Vertices not supported! "
                     "Please convert to faces.")
+
+            elif component.hasFn(OpenMaya.MFn.kMeshMapComponent):
+                raise RuntimeError(
+                    "UVs not supported! "
+                    "Please convert to faces.")
+
+            elif component.hasFn(OpenMaya.MFn.kMeshVtxFaceComponent):
+                raise RuntimeError(
+                    "Vertex Faces not supported! "
+                    "Please convert to faces.")
+
             else:
                 raise RuntimeError("Object is not a mesh!")
 
+        self.transform = "what"
         self.ratio = self.get_ratio()
-
-    def get_indices(self):
-        return [0, 1, 2]
+        self.indices = [0, 1, 2]
 
     def get_ratio(self):
         return 1.0
-
-    @property
-    def indices(self):
-        return self.indices
-
-    @property
-    def ratio(self):
-        return self.ratio
