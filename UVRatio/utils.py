@@ -19,6 +19,7 @@ def show():
     for widget in QtWidgets.QApplication.instance().topLevelWidgets():
         if widget.objectName() == 'UVRatio':
             widget.close()
+            break
 
     win = UI(utils.get_maya_window())
     win.show()

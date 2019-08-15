@@ -54,7 +54,37 @@ class UI(QtWidgets.QDialog):
         :return: None
         :rtype: NoneType
         """
-        pass
+        self.source_lbl = QtWidgets.QLabel("Source ")
+        self.source_lnedt = QtWidgets.QLineEdit("")
+        self.source_btn = QtWidgets.QPushButton("<<")
+
+        self.dest_lbl = QtWidgets.QLabel("Destination ")
+        self.dest_lnedt = QtWidgets.QLineEdit("")
+        self.dest_btn = QtWidgets.QPushButton("<<")
+
+        self.source_ratio = QtWidgets.QLabel("Source Ratio : 1.0")
+        self.dest_ratio = QtWidgets.QLabel("Destination Ratio : 1.0")
+
+        self.doit_btn = QtWidgets.QPushButton("Copy UV Ratio")
+        self.doit_btn.setMinimumHeight(40)
+
+        self.ratio_layout = QtWidgets.QGridLayout()
+        self.ratio_layout.addWidget(
+            self.source_ratio, 0, 0, QtCore.Qt.AlignCenter)
+        self.ratio_layout.addWidget(
+            self.dest_ratio, 0, 1, QtCore.Qt.AlignCenter)
+
+        self.grid_layout = QtWidgets.QGridLayout()
+        self.grid_layout.addWidget(self.source_lbl, 0, 0, QtCore.Qt.AlignRight)
+        self.grid_layout.addWidget(self.source_lnedt, 0, 1)
+        self.grid_layout.addWidget(self.source_btn, 0, 2)
+        self.grid_layout.addWidget(self.dest_lbl, 1, 0, QtCore.Qt.AlignRight)
+        self.grid_layout.addWidget(self.dest_lnedt, 1, 1)
+        self.grid_layout.addWidget(self.dest_btn, 1, 2)
+
+        self.layout.addLayout(self.ratio_layout)
+        self.layout.addLayout(self.grid_layout)
+        self.layout.addWidget(self.doit_btn)
 
     def create_connections(self):
         """
