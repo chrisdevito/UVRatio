@@ -1,3 +1,4 @@
+import math
 from maya import cmds
 from maya.api import OpenMaya
 
@@ -44,9 +45,42 @@ class Mesh(object):
             else:
                 raise RuntimeError("Object is not a mesh!")
 
-        self.transform = "what"
+        # get area
+        self.uv_area = 0
+        self.world_area = 0
+        self.get_info(dag, component)
+
+        # get ratio
         self.ratio = self.get_ratio()
-        self.indices = [0, 1, 2]
+        self.transform = dag.partialPathName()
+
+    def get_info(self, dag, component):
+        """Gets info needed"""
+        mesh_iter = OpenMaya.MItMeshPolygon(dag, component)
+        self.count = mesh_iter.count()
+        self.uv_indexs = set()
+
+        while not mesh_iter.isDone():
+            self.uv_area += mesh_iter.getUVArea()
+            self.world_area += mesh_iter.getArea()
+            
+            vertex_inds = mesh_iter.getVertices()
+
+            for vertex in vertex_inds:
+                self.uv_indexs.add(mesh_iter.getUVIndex(vertex))
+
+            mesh_iter.next(1)
+
+        print self.uv_indexs
 
     def get_ratio(self):
-        return 1.0
+        try:
+            return math.sqrt(self.uv_area / self.world_area)
+        except ZeroDivisionError:
+            raise RuntimeError(
+                "Unable to calculate area because it's zero...")
+
+    def resize(self, new_ratio):
+
+
+        cmds.polyListComponentConversion(fromFace=True, toUV=True)

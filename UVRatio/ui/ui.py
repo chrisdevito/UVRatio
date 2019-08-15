@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import division
+
 import os
 from functools import partial
 
@@ -21,7 +23,7 @@ class UI(QtWidgets.QDialog):
         # Set window
         self.setWindowTitle("UVRatio")
         self.setObjectName("UVRatio")
-        self.resize(450, 150)
+        self.resize(600, 150)
 
         # Grab stylesheet
         with open(this_path("style.css")) as f:
@@ -112,8 +114,8 @@ class UI(QtWidgets.QDialog):
         self.source_node = models.Mesh()
         self.source_ratio = self.source_node.ratio
 
-        self.source_lnedt.setText("{0} {1}".format(
-            self.source_node.transform, self.source_node.indices))
+        self.source_lnedt.setText("{0} ({1} faces)".format(
+            self.source_node.transform, self.source_node.count))
         self.source_lbl.setText("Source ({0:.3f})".format(self.source_ratio))
 
     def add_destination(self):
@@ -122,8 +124,8 @@ class UI(QtWidgets.QDialog):
         self.dest_node = models.Mesh()
         self.dest_ratio = self.dest_node.ratio
 
-        self.dest_lnedt.setText("{0} {1}".format(
-            self.dest_node.transform, self.dest_node.indices))
+        self.dest_lnedt.setText("{0} ({1} faces)".format(
+            self.dest_node.transform, self.dest_node.count))
         self.dest_lbl.setText("Destination ({0:.3f})".format(self.dest_ratio))
 
     def keyPressEvent(self, event):
