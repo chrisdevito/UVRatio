@@ -1,4 +1,4 @@
-// Installs the CameraSequencer package to your open maya session.
+// Installs the UVRatio package to your open maya session.
 
 proc string getPathFromProc(string $procName)
 {
