@@ -48,30 +48,53 @@ class Mesh(object):
         # get area
         self.uv_area = 0
         self.world_area = 0
+        self.center = [0, 0]
+
         self.get_info(dag, component)
 
         # get ratio
         self.ratio = self.get_ratio()
-        self.transform = dag.partialPathName()
+
+        # get transform
+        if cmds.nodeType(dag.partialPathName()) == "mesh":
+            self.transform = cmds.listRelatives(
+                dag.partialPathName(), parent=True)[0]
+            self.shape = dag.partialPathName()
+        else:
+            self.transform = dag.partialPathName()
+            self.shape = cmds.listRelatives(
+                dag.partialPathName(), children=True)[0]
 
     def get_info(self, dag, component):
         """Gets info needed"""
         mesh_iter = OpenMaya.MItMeshPolygon(dag, component)
         self.count = mesh_iter.count()
-        self.uv_indexs = set()
+        self.uv_indexes = set()
+
+        min_x, min_y = 9999, 9999
+        max_x, max_y = -9999, -9999
 
         while not mesh_iter.isDone():
+
             self.uv_area += mesh_iter.getUVArea()
             self.world_area += mesh_iter.getArea()
-            
-            vertex_inds = mesh_iter.getVertices()
 
-            for vertex in vertex_inds:
-                self.uv_indexs.add(mesh_iter.getUVIndex(vertex))
+            for v in xrange(mesh_iter.polygonVertexCount()):        
+                
+                # get index and store it
+                self.uv_indexes.add(mesh_iter.getUVIndex(v))
+
+                # check min max value
+                x, y = mesh_iter.getUV(v)
+                if x < min_x: min_x = x
+                if y < min_y: min_y = y
+                if x > max_x: max_x = x
+                if y > max_y: max_y = y
 
             mesh_iter.next(1)
 
-        print self.uv_indexs
+        self.center = [((max_x - min_x) / 2.0) + min_x,
+                       ((max_y - min_y) / 2.0) + min_y]
 
     def get_ratio(self):
         try:
@@ -82,5 +105,10 @@ class Mesh(object):
 
     def resize(self, new_ratio):
 
-
-        cmds.polyListComponentConversion(fromFace=True, toUV=True)
+        scale_amt = (self.ratio / self.new_ratio)
+        cmds.polyEditUV(
+            ["{0}.map[{1}]".format(self.transform, m) for m in uv_indexes],
+            pivotU=self.center[0],
+            pivotV=self.center[1],
+            scaleU=scale_amt,
+            scaleV=scale_amt)
