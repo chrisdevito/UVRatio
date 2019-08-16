@@ -39,6 +39,9 @@ class UI(QtWidgets.QDialog):
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(10, 10, 10, 10)
 
+        self.source_node = None
+        self.dest_node = None
+
         self.create_layout()
         self.create_connections()
         self.create_tooltips()
@@ -68,7 +71,7 @@ class UI(QtWidgets.QDialog):
         self.dest_lnedt = QtWidgets.QLineEdit("")
         self.dest_btn = QtWidgets.QPushButton("<<")
 
-        self.doit_btn = QtWidgets.QPushButton("Copy UV Ratio")
+        self.doit_btn = QtWidgets.QPushButton("Match UV Ratio")
         self.doit_btn.setMinimumHeight(40)
 
         self.grid_layout = QtWidgets.QGridLayout()
@@ -96,6 +99,9 @@ class UI(QtWidgets.QDialog):
 
         self.dest_btn.clicked.connect(
             self.add_destination)
+
+        self.doit_btn.clicked.connect(
+            self.copy_uv_ratio)
 
     def create_tooltips(self):
         """
@@ -127,6 +133,13 @@ class UI(QtWidgets.QDialog):
         self.dest_lnedt.setText("{0} ({1} faces)".format(
             self.dest_node.transform, self.dest_node.count))
         self.dest_lbl.setText("Destination ({0:.3f})".format(self.dest_ratio))
+
+    def copy_uv_ratio(self):
+        """copy that data"""
+        if not self.source_node or not self.dest_node:
+            raise RuntimeError("Both source and destination meshes needed!")
+
+        self.dest_node.resize(self.source_node.ratio)
 
     def keyPressEvent(self, event):
         '''

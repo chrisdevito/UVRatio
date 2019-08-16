@@ -79,17 +79,21 @@ class Mesh(object):
             self.uv_area += mesh_iter.getUVArea()
             self.world_area += mesh_iter.getArea()
 
-            for v in xrange(mesh_iter.polygonVertexCount()):        
-                
+            for v in xrange(mesh_iter.polygonVertexCount()):
+
                 # get index and store it
                 self.uv_indexes.add(mesh_iter.getUVIndex(v))
 
                 # check min max value
                 x, y = mesh_iter.getUV(v)
-                if x < min_x: min_x = x
-                if y < min_y: min_y = y
-                if x > max_x: max_x = x
-                if y > max_y: max_y = y
+                if x < min_x:
+                    min_x = x
+                if y < min_y:
+                    min_y = y
+                if x > max_x:
+                    max_x = x
+                if y > max_y:
+                    max_y = y
 
             mesh_iter.next(1)
 
@@ -104,11 +108,17 @@ class Mesh(object):
                 "Unable to calculate area because it's zero...")
 
     def resize(self, new_ratio):
+        """
+        Resize ratio
+        """
+        scale_amt = new_ratio / self.ratio
 
-        scale_amt = (self.ratio / self.new_ratio)
         cmds.polyEditUV(
-            ["{0}.map[{1}]".format(self.transform, m) for m in uv_indexes],
+            ["{0}.map[{1}]".format(self.transform, m)
+             for m in self.uv_indexes],
             pivotU=self.center[0],
             pivotV=self.center[1],
             scaleU=scale_amt,
             scaleV=scale_amt)
+
+        self.ratio = new_ratio
