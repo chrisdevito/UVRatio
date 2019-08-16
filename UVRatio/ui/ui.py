@@ -64,11 +64,13 @@ class UI(QtWidgets.QDialog):
         self.source_lbl = QtWidgets.QLabel(
             "Source ({0:.3f})".format(self.source_ratio))
         self.source_lnedt = QtWidgets.QLineEdit("")
+        self.source_lnedt.setEnabled(False)
         self.source_btn = QtWidgets.QPushButton("<<")
 
         self.dest_lbl = QtWidgets.QLabel(
             "Destination ({0:.3f})".format(self.dest_ratio))
         self.dest_lnedt = QtWidgets.QLineEdit("")
+        self.dest_lnedt.setEnabled(False)
         self.dest_btn = QtWidgets.QPushButton("<<")
 
         self.doit_btn = QtWidgets.QPushButton("Match UV Ratio")
