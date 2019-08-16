@@ -120,8 +120,9 @@ class UI(QtWidgets.QDialog):
         self.source_node = models.Mesh()
         self.source_ratio = self.source_node.ratio
 
-        self.source_lnedt.setText("{0} ({1} faces)".format(
-            self.source_node.transform, self.source_node.count))
+        self.source_lnedt.setText("{0} ({1} faces total)".format(
+            " ".join(self.source_node.transforms),
+            sum(self.source_node.counts)))
         self.source_lbl.setText("Source ({0:.3f})".format(self.source_ratio))
 
     def add_destination(self):
@@ -130,8 +131,10 @@ class UI(QtWidgets.QDialog):
         self.dest_node = models.Mesh()
         self.dest_ratio = self.dest_node.ratio
 
-        self.dest_lnedt.setText("{0} ({1} faces)".format(
-            self.dest_node.transform, self.dest_node.count))
+        self.dest_lnedt.setText("{0} ({1} faces total)".format(
+            " ".join(self.dest_node.transforms),
+            sum(self.dest_node.counts)))
+
         self.dest_lbl.setText("Destination ({0:.3f})".format(self.dest_ratio))
 
     def copy_uv_ratio(self):
@@ -140,6 +143,8 @@ class UI(QtWidgets.QDialog):
             raise RuntimeError("Both source and destination meshes needed!")
 
         self.dest_node.resize(self.source_node.ratio)
+        self.dest_lbl.setText(
+            "Destination ({0:.3f})".format(self.dest_node.ratio))
 
     def keyPressEvent(self, event):
         '''

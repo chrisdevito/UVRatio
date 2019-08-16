@@ -9,96 +9,114 @@ class Mesh(object):
 
         active_sel = OpenMaya.MGlobal.getActiveSelectionList()
 
-        if not active_sel:
+        self.mesh_count = active_sel.length()
+
+        if self.mesh_count == 0:
             raise RuntimeError("Nothing Selected!")
 
-        dag, component = active_sel.getComponent(0)
+        self.meshes = []
+        self.transforms = []
+        self.shapes = []
 
-        if not dag.hasFn(OpenMaya.MFn.kMesh):
-            raise RuntimeError("Selected is not a mesh!")
+        for x in xrange(self.mesh_count):
 
-        if not component.isNull():
+            dag, component = active_sel.getComponent(x)
 
-            if component.hasFn(OpenMaya.MFn.kMeshPolygonComponent):
-                pass
+            if not dag.hasFn(OpenMaya.MFn.kMesh):
+                raise RuntimeError("Selected is not a mesh!")
 
-            elif component.hasFn(OpenMaya.MFn.kMeshEdgeComponent):
-                raise RuntimeError(
-                    "Edges not supported! "
-                    "Please convert to faces.")
+            if not component.isNull():
 
-            elif component.hasFn(OpenMaya.MFn.kMeshVertComponent):
-                raise RuntimeError(
-                    "Vertices not supported! "
-                    "Please convert to faces.")
+                if component.hasFn(OpenMaya.MFn.kMeshPolygonComponent):
+                    pass
 
-            elif component.hasFn(OpenMaya.MFn.kMeshMapComponent):
-                raise RuntimeError(
-                    "UVs not supported! "
-                    "Please convert to faces.")
+                elif component.hasFn(OpenMaya.MFn.kMeshEdgeComponent):
+                    raise RuntimeError(
+                        "Edges not supported! "
+                        "Please convert to faces.")
 
-            elif component.hasFn(OpenMaya.MFn.kMeshVtxFaceComponent):
-                raise RuntimeError(
-                    "Vertex Faces not supported! "
-                    "Please convert to faces.")
+                elif component.hasFn(OpenMaya.MFn.kMeshVertComponent):
+                    raise RuntimeError(
+                        "Vertices not supported! "
+                        "Please convert to faces.")
 
+                elif component.hasFn(OpenMaya.MFn.kMeshMapComponent):
+                    raise RuntimeError(
+                        "UVs not supported! "
+                        "Please convert to faces.")
+
+                elif component.hasFn(OpenMaya.MFn.kMeshVtxFaceComponent):
+                    raise RuntimeError(
+                        "Vertex Faces not supported! "
+                        "Please convert to faces.")
+
+                else:
+                    raise RuntimeError("Object is not a mesh!")
+
+            self.meshes.append([dag, component])
+
+            # get transform
+            if cmds.nodeType(dag.partialPathName()) == "mesh":
+                self.transforms.append(cmds.listRelatives(
+                    dag.partialPathName(), parent=True)[0])
+                self.shapes.append(dag.partialPathName())
             else:
-                raise RuntimeError("Object is not a mesh!")
+                self.transforms.append(dag.partialPathName())
+                self.shapes.append(cmds.listRelatives(
+                    dag.partialPathName(), children=True)[0])
 
-        # get area
+        # init values
         self.uv_area = 0
         self.world_area = 0
-        self.center = [0, 0]
 
-        self.get_info(dag, component)
+        # get info
+        self.get_info()
 
         # get ratio
         self.ratio = self.get_ratio()
 
-        # get transform
-        if cmds.nodeType(dag.partialPathName()) == "mesh":
-            self.transform = cmds.listRelatives(
-                dag.partialPathName(), parent=True)[0]
-            self.shape = dag.partialPathName()
-        else:
-            self.transform = dag.partialPathName()
-            self.shape = cmds.listRelatives(
-                dag.partialPathName(), children=True)[0]
-
-    def get_info(self, dag, component):
+    def get_info(self):
         """Gets info needed"""
-        mesh_iter = OpenMaya.MItMeshPolygon(dag, component)
-        self.count = mesh_iter.count()
-        self.uv_indexes = set()
 
         min_x, min_y = 9999, 9999
         max_x, max_y = -9999, -9999
 
-        while not mesh_iter.isDone():
+        self.counts = []
+        self.centers = []
+        self.uv_indexes = []
 
-            self.uv_area += mesh_iter.getUVArea()
-            self.world_area += mesh_iter.getArea()
+        for dag, component in self.meshes:
 
-            for v in xrange(mesh_iter.polygonVertexCount()):
+            mesh_iter = OpenMaya.MItMeshPolygon(dag, component)
+            self.counts.append(mesh_iter.count())
+            uv_index = set()
 
-                # get index and store it
-                self.uv_indexes.add(mesh_iter.getUVIndex(v))
+            while not mesh_iter.isDone():
 
-                # check min max value
-                x, y = mesh_iter.getUV(v)
-                if x < min_x:
-                    min_x = x
-                if y < min_y:
-                    min_y = y
-                if x > max_x:
-                    max_x = x
-                if y > max_y:
-                    max_y = y
+                self.uv_area += mesh_iter.getUVArea()
+                self.world_area += mesh_iter.getArea()
 
-            mesh_iter.next(1)
+                for v in xrange(mesh_iter.polygonVertexCount()):
 
-        self.center = [((max_x - min_x) / 2.0) + min_x,
-                       ((max_y - min_y) / 2.0) + min_y]
+                    # get index and store it
+                    uv_index.add(mesh_iter.getUVIndex(v))
+
+                    # check min max value
+                    x, y = mesh_iter.getUV(v)
+                    if x < min_x:
+                        min_x = x
+                    if y < min_y:
+                        min_y = y
+                    if x > max_x:
+                        max_x = x
+                    if y > max_y:
+                        max_y = y
+
+                mesh_iter.next(1)
+
+            self.centers.append([((max_x - min_x) / 2.0) + min_x,
+                                ((max_y - min_y) / 2.0) + min_y])
+            self.uv_indexes.append(uv_index)
 
     def get_ratio(self):
         try:
@@ -113,12 +131,13 @@ class Mesh(object):
         """
         scale_amt = new_ratio / self.ratio
 
-        cmds.polyEditUV(
-            ["{0}.map[{1}]".format(self.transform, m)
-             for m in self.uv_indexes],
-            pivotU=self.center[0],
-            pivotV=self.center[1],
-            scaleU=scale_amt,
-            scaleV=scale_amt)
+        for i, transform in enumerate(self.transforms):
+            cmds.polyEditUV(
+                ["{0}.map[{1}]".format(transform, m)
+                 for m in self.uv_indexes[i]],
+                pivotU=self.centers[i][0],
+                pivotV=self.centers[i][1],
+                scaleU=scale_amt,
+                scaleV=scale_amt)
 
         self.ratio = new_ratio
